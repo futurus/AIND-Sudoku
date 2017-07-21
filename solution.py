@@ -11,7 +11,8 @@ row_units = [cross(r, cols) for r in rows]
 column_units = [cross(rows, c) for c in cols]
 square_units = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')]
 # Add main diagonal units for Diagonal Sudoku version
-diag_units = [[rows[i] + cols[i] for i in range(0, len(rows))], [rows[::-1][i] + cols[i] for i in range(0, len(rows))]]
+# Fancy version using zip()
+diag_units = [[r + c for r, c in zip(rows, cols)], [r + c for r, c in zip(rows[::-1], cols)]]
 unitlist = row_units + column_units + square_units + diag_units
 units = dict((s, [u for u in unitlist if s in u]) for s in boxes)
 peers = dict((s, set(sum(units[s],[]))-set([s])) for s in boxes)
@@ -56,16 +57,9 @@ def naked_twins(values):
     Returns:
         the values dictionary with the naked twins eliminated from peers.
     """
+    ulist = row_units + column_units + square_units
 
-    rows = 'ABCDEFGHI'
-    cols = '123456789'
-
-    row_units = [cross(r, cols) for r in rows]
-    column_units = [cross(rows, c) for c in cols]
-    square_units = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')]
-    unitlist = row_units + column_units + square_units
-
-    for unit in unitlist:
+    for unit in ulist:
     # Find all instances of naked twins
         twins = [box for box in unit if len(values[box]) == 2]
 
@@ -117,6 +111,11 @@ def display(values):
     return
 
 def eliminate(values):
+    """
+    Performing elimination technique
+    Args:
+        values(dict): The sudoku in dictionary form
+    """
     solved_values = [box for box in values.keys() if len(values[box]) == 1]
     for box in solved_values:
         digit = values[box]
@@ -126,6 +125,11 @@ def eliminate(values):
     return values
 
 def only_choice(values):
+    """
+    Performing only choice technique
+    Args:
+        values(dict): The sudoku in dictionary form
+    """
     for unit in unitlist:
         for digit in '123456789':
             dplaces = [box for box in unit if digit in values[box]]
@@ -135,6 +139,11 @@ def only_choice(values):
     return values
 
 def reduce_puzzle(values):
+    """
+    Repeatly apply elimination and only choice to simplify the sudoku problem
+    Args:
+        values(dict): The sudoku in dictionary form
+    """
     stalled = False
     while not stalled:
         solved_values_before = len([box for box in values.keys() if len(values[box]) == 1])
@@ -148,7 +157,11 @@ def reduce_puzzle(values):
     return values
 
 def search(values):
-    "Using depth-first search and propagation, try all possible values."
+    """
+    Using depth-first search and propagation, try all possible values.
+    Args:
+        values(dict): The sudoku in dictionary form
+    """
     # First, reduce the puzzle using the previous function
     values = reduce_puzzle(values)
     if values is False:
